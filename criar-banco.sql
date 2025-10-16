@@ -1,1 +1,0 @@
-CREATE DATABASE bbanco_adc;

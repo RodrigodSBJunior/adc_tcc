@@ -1,4 +1,4 @@
-package com.in2dm.adc.tcc.Controller;
+ package com.in2dm.adc.tcc.Controller;
 
 import com.in2dm.adc.tcc.model.entity.Usuario;
 import com.in2dm.adc.tcc.model.entity.Profissional;

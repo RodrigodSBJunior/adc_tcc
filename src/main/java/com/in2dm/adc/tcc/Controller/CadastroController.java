@@ -8,6 +8,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.LocalDate;
 import java.time.Period;
@@ -18,6 +20,8 @@ import java.util.Map;
 @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
 public class CadastroController {
 
+    private static final Logger logger = LoggerFactory.getLogger(CadastroController.class);
+
     @Autowired
     private UsuarioService usuarioService;
     
@@ -27,6 +31,7 @@ public class CadastroController {
     @PostMapping
     public ResponseEntity<?> cadastrar(@RequestBody Map<String, Object> dados) {
         try {
+            logger.info("Recebendo dados de cadastro: {}", dados);
             // Validações básicas
             String nomeCompleto = (String) dados.get("nomeCompleto");
             String email = (String) dados.get("email");
@@ -53,15 +58,19 @@ public class CadastroController {
             }
 
             // Validar idade se fornecida
-            LocalDate dataNascimento = null;
+            LocalDate dataNascimento = LocalDate.now().minusYears(18); // Data padrão
             if (dados.get("dataNascimento") != null) {
-                dataNascimento = LocalDate.parse((String) dados.get("dataNascimento"));
-                int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
-                
-                if ("profissional".equals(tipoUsuario) && idade < 18) {
-                    return ResponseEntity.badRequest().body("Profissionais devem ter pelo menos 18 anos");
-                } else if ("usuario".equals(tipoUsuario) && idade < 12) {
-                    return ResponseEntity.badRequest().body("Usuários devem ter pelo menos 12 anos");
+                try {
+                    dataNascimento = LocalDate.parse((String) dados.get("dataNascimento"));
+                    int idade = Period.between(dataNascimento, LocalDate.now()).getYears();
+                    
+                    if ("profissional".equals(tipoUsuario) && idade < 18) {
+                        return ResponseEntity.badRequest().body("Profissionais devem ter pelo menos 18 anos");
+                    } else if ("usuario".equals(tipoUsuario) && idade < 12) {
+                        return ResponseEntity.badRequest().body("Usuários devem ter pelo menos 12 anos");
+                    }
+                } catch (Exception e) {
+                    return ResponseEntity.badRequest().body("Data de nascimento inválida");
                 }
             }
 
